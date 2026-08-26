@@ -1,0 +1,14 @@
+services:
+  second-brain:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - SESSION_SECRET=${SESSION_SECRET:-your-secret-key-change-in-production}
+    restart: unless-stopped
