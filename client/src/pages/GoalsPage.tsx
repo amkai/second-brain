@@ -43,8 +43,16 @@ export function GoalsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => goalApi.delete(id),
-    onSuccess: (_data, id) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['goals'] });
+      const previous = queryClient.getQueryData(['goals']);
       queryClient.setQueryData(['goals'], (old: any[]) => old?.filter((g) => g.id !== id) ?? []);
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['goals'], context.previous);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });

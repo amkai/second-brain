@@ -34,8 +34,14 @@ export function IdeasPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => ideaApi.delete(id),
-    onSuccess: (_data, id) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['ideas'] });
+      const previous = queryClient.getQueryData(['ideas']);
       queryClient.setQueryData(['ideas'], (old: any[]) => old?.filter((i) => i.id !== id) ?? []);
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['ideas'], context.previous);
     },
   });
 

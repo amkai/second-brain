@@ -51,8 +51,16 @@ export function ExpensesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => expenseApi.delete(id),
-    onSuccess: (_data, id) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses'] });
+      const previous = queryClient.getQueryData(['expenses', month, year]);
       queryClient.setQueryData(['expenses', month, year], (old: any[]) => old?.filter((e) => e.id !== id) ?? []);
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['expenses', month, year], context.previous);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['expenseSummary'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },

@@ -27,8 +27,9 @@ const db = {
     return {
       run(...params: any[]) {
         sqlDb.run(sql, params);
+        const changes = sqlDb.getRowsModified();
         saveDb();
-        return { changes: sqlDb.getRowsModified() };
+        return { changes };
       },
       get(...params: any[]): any {
         const stmt = sqlDb.prepare(sql);

@@ -51,9 +51,15 @@ export function NotesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => noteApi.delete(id),
-    onSuccess: (_data, id) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['notes'] });
+      const previous = queryClient.getQueryData(['notes']);
       queryClient.setQueryData(['notes'], (old: any[]) => old?.filter((n) => n.id !== id) ?? []);
       if (selectedNote === id) setSelectedNote(null);
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['notes'], context.previous);
     },
   });
 

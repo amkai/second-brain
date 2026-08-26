@@ -28,8 +28,14 @@ export function HabitsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => habitApi.delete(id),
-    onSuccess: (_data, id) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['habits'] });
+      const previous = queryClient.getQueryData(['habits']);
       queryClient.setQueryData(['habits'], (old: any[]) => old?.filter((h) => h.id !== id) ?? []);
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['habits'], context.previous);
     },
   });
 

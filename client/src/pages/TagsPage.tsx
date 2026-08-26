@@ -27,8 +27,14 @@ export function TagsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => tagApi.delete(id),
-    onSuccess: (_data, id) => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['tags'] });
+      const previous = queryClient.getQueryData(['tags']);
       queryClient.setQueryData(['tags'], (old: any[]) => old?.filter((t) => t.id !== id) ?? []);
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['tags'], context.previous);
     },
   });
 
