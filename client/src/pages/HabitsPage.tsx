@@ -41,8 +41,24 @@ export function HabitsPage() {
 
   const toggleLogMutation = useMutation({
     mutationFn: ({ id, date }: { id: string; date: string }) => habitApi.toggleLog(id, date),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    onMutate: async ({ id, date }: { id: string; date: string }) => {
+      await queryClient.cancelQueries({ queryKey: ['habitLogs', id] });
+      const previous = queryClient.getQueryData(['habitLogs', id]);
+      queryClient.setQueryData(['habitLogs', id], (old: any[]) => {
+        const without = old?.filter((l) => l.date !== date) ?? [];
+        if (!old?.some((l) => l.date === date)) {
+          return [...without, { id: `optimistic-${date}`, habit_id: id, date, completed: 1 }];
+        }
+        return without;
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['habitLogs', _vars.id], context.previous);
+    },
+    onSettled: (_data, _err, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['habitLogs', vars.id] });
+      queryClient.invalidateQueries({ queryKey: ['habitStreak', vars.id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
@@ -155,9 +171,11 @@ function HabitCard({ habit, last7Days, onToggle, onDelete }: {
   });
 
   const completedDates = new Set(logs.map((l: any) => l.date));
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const doneToday = completedDates.has(todayStr);
 
   return (
-    <Card>
+    <Card className={doneToday ? 'border-[var(--success)]' : ''}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div>
@@ -169,13 +187,21 @@ function HabitCard({ habit, last7Days, onToggle, onDelete }: {
               <p className="text-sm text-[var(--muted-foreground)]">{habit.description}</p>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {streak && (
               <div className="flex items-center gap-1 text-sm">
                 <Flame size={16} className="text-orange-500" />
                 <span>{streak.currentStreak}</span>
               </div>
             )}
+            <Button
+              variant={doneToday ? 'default' : 'outline'}
+              onClick={() => onToggle(todayStr)}
+              className={doneToday ? 'bg-[var(--success)] text-white hover:opacity-90 border-none' : 'hover:border-[var(--success)] hover:text-[var(--success)]'}
+            >
+              <Check size={16} className="mr-1" />
+              {doneToday ? 'Done' : 'Mark Done'}
+            </Button>
             <Button variant="ghost" size="icon" onClick={onDelete}>
               <Trash2 size={16} className="text-[var(--destructive)]" />
             </Button>
