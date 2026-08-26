@@ -1,0 +1,185 @@
+================================================================
+  SECOND BRAIN - SETUP & RUN GUIDE
+  Works on Windows, macOS, and Linux
+================================================================
+
+WHAT THIS APP IS
+----------------
+A personal knowledge webapp with: expense tracker, ideas,
+reminders, markdown notes, habit tracker, goals, unified
+calendar, tags, global search (Ctrl+K), and dark mode.
+
+
+REQUIREMENTS
+------------
+- Node.js version 20 or newer
+  Download: https://nodejs.org  (choose the LTS version)
+  Check your version:   node --version
+- That's it. No databases to install, no native build tools.
+  (The database is SQLite compiled to pure JavaScript.)
+
+
+============================================================
+OPTION A - RUN FROM SOURCE (recommended, all platforms)
+============================================================
+
+STEP 1: Get the code
+--------------------
+Open a terminal (Windows: PowerShell or Command Prompt) and run:
+
+    git clone https://github.com/amkai/second-brain.git
+    cd second-brain
+
+(No git? Click "Code" -> "Download ZIP" on the GitHub page,
+extract it, then open a terminal in that folder.)
+
+
+STEP 2: Install dependencies
+----------------------------
+    npm install
+
+This installs everything for both frontend and backend.
+Takes about 30-60 seconds.
+
+
+STEP 3: Run it
+--------------
+    npm run dev
+
+You will see output from two servers starting. When you see:
+
+    Server running on http://localhost:3001
+    Local: http://localhost:5173/
+
+...open your browser at:   http://localhost:5173
+
+STEP 4: Create your account
+---------------------------
+Click "Sign Up", choose any username and password.
+8 expense categories are created automatically for you.
+
+Your data is stored in:
+    server/data/second-brain.db
+Back up this one file to back up everything.
+
+
+HOW TO STOP IT
+--------------
+Press Ctrl+C in the terminal where it is running.
+
+
+============================================================
+OPTION B - DOCKER (no Node.js needed)
+============================================================
+
+Requires Docker Desktop (https://www.docker.com/products/docker-desktop/)
+
+    git clone https://github.com/amkai/second-brain.git
+    cd second-brain
+    docker compose up --build
+
+Then open:   http://localhost:3001
+(The server serves both the app and the API on port 3001.)
+
+To stop:     docker compose down        (data is kept)
+To wipe data too: delete the ./data folder
+
+
+============================================================
+AUTO-START ON LOGIN (optional)
+============================================================
+
+WINDOWS
+-------
+1. Open File Explorer, press Win+R, type:  shell:startup
+   and press Enter.
+2. Copy  scripts\start-second-brain.bat  into that folder.
+3. Edit the .bat file first! Replace the cd path so it points
+   to YOUR copy of the project, e.g.:
+       cd /d "C:\Users\YourName\second-brain"
+4. Done - it starts hidden in a terminal window every login.
+   To close it: open Task Manager, end the "node.exe" tasks,
+   or just reboot.
+
+MACOS
+-----
+1. Edit scripts/com.secondbrain.dev.plist:
+   replace USERNAME with your macOS username (run: whoami).
+2. Then in Terminal:
+       cp scripts/com.secondbrain.dev.plist ~/Library/LaunchAgents/
+       launchctl load ~/Library/LaunchAgents/com.secondbrain.dev.plist
+3. To stop auto-starting:
+       launchctl unload ~/Library/LaunchAgents/com.secondbrain.dev.plist
+4. Manual start/stop without launchd:
+       Start:  cd second-brain && npm run dev
+       Stop:   Ctrl+C in that terminal
+
+LINUX (Hyprland / Omarchy)
+--------------------------
+1. Run:   bash scripts/setup-linux.sh
+2. Add this line to ~/.config/hypr/autostart.lua :
+       o.launch_on_start("second-brain")
+
+
+============================================================
+PUTTING IT ON YOUR PHONE / OTHER DEVICES (optional)
+============================================================
+
+Easiest: deploy to Railway (free tier):
+
+    npm install -g @railway/cli
+    railway login
+    railway init                 (create new project)
+    railway variables set SESSION_SECRET=any-long-random-string
+    railway variables set NODE_ENV=production
+    railway up                   (builds using the included Dockerfile)
+    railway domain               (gives you a public URL)
+
+Open that URL anywhere - phone, tablet, another PC.
+Note: free tier sleeps after inactivity; first load takes ~30s.
+
+IMPORTANT: each deployment has its own separate database.
+Data does NOT sync between your laptop install and cloud
+install automatically.
+
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+"npm: command not found" / "'npm' is not recognized"
+    Node.js is not installed or PATH not refreshed.
+    Install from nodejs.org and REOPEN your terminal.
+
+Port already in use (EADDRINUSE)
+    Something else is on ports 5173/3001.
+    Close it, or change the port:
+      - Server:  set PORT=4001  (Windows: set PORT=4001 &
+                                 npm run dev:server)
+    Vite picks the next free port automatically if asked.
+
+Login stops working after restarting the server
+    Sessions are stored in memory; logging in again is normal
+    after a restart. Your DATA is safe (stored on disk).
+
+Docker build fails
+    Run:  docker compose build --no-cache
+    Make sure Docker Desktop is running first.
+
+Where is my data?
+    server/data/second-brain.db  <- single file, back this up
+
+
+============================================================
+QUICK REFERENCE
+============================================================
+
+Dev mode (auto-reload):      npm run dev
+Build for production:        npm run build
+Run production build:        npm start        (port 3001)
+Docker:                      docker compose up --build
+
+Frontend URL (dev):          http://localhost:5173
+Server/API URL:              http://localhost:3001/api
+
+Global search shortcut:      Ctrl+K  (Cmd+K on Mac)

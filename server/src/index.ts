@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { initializeDatabase } from './db/schema.js';
 import authRoutes from './routes/auth.js';
 import expenseRoutes from './routes/expenses.js';
@@ -48,6 +51,23 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/categories', categoryRoutes);
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const staticCandidates = [
+  process.env.STATIC_DIR,
+  path.join(__dirname, '../../public'),
+  path.join(__dirname, '../../client/dist'),
+].filter((d): d is string => !!d);
+const publicDir = staticCandidates.find((d) => fs.existsSync(path.join(d, 'index.html')));
+
+if (publicDir) {
+  app.use(express.static(publicDir));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(publicDir, 'index.html'));
+  });
+  console.log(`Serving client from ${publicDir}`);
+}
 
 async function start() {
   await initializeDatabase();

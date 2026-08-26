@@ -2,6 +2,9 @@
   "name": "second-brain",
   "private": true,
   "workspaces": ["client", "server"],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "npm run dev --workspace=client",

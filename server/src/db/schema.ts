@@ -22,18 +22,22 @@ function saveDb() {
   fs.writeFileSync(dbPath, buffer);
 }
 
+function cleanParams(params: any[]): any[] {
+  return params.map((p) => (p === undefined ? null : p));
+}
+
 const db = {
   prepare(sql: string) {
     return {
       run(...params: any[]) {
-        sqlDb.run(sql, params);
+        sqlDb.run(sql, cleanParams(params));
         const changes = sqlDb.getRowsModified();
         saveDb();
         return { changes };
       },
       get(...params: any[]): any {
         const stmt = sqlDb.prepare(sql);
-        stmt.bind(params);
+        stmt.bind(cleanParams(params));
         if (stmt.step()) {
           const columns = stmt.getColumnNames();
           const values = stmt.get();
@@ -48,7 +52,7 @@ const db = {
       all(...params: any[]): any[] {
         const results: any[] = [];
         const stmt = sqlDb.prepare(sql);
-        stmt.bind(params);
+        stmt.bind(cleanParams(params));
         while (stmt.step()) {
           const columns = stmt.getColumnNames();
           const values = stmt.get();
