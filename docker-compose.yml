@@ -10,5 +10,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      - STATIC_DIR=/app/public
+      - DATA_DIR=/app/data
       - SESSION_SECRET=${SESSION_SECRET:-your-secret-key-change-in-production}
     restart: unless-stopped

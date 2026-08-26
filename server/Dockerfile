@@ -25,12 +25,14 @@ FROM node:20-alpine AS production
 WORKDIR /app
 
 COPY --from=base /app/server/dist ./dist
-COPY --from=base /app/server/node_modules ./node_modules
+COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/server/package.json ./
 COPY --from=base /app/client/dist ./public
 
 ENV NODE_ENV=production
 ENV PORT=3001
+ENV STATIC_DIR=/app/public
+ENV DATA_DIR=/app/data
 
 EXPOSE 3001
 

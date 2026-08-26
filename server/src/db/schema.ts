@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbDir = path.join(__dirname, '../../data');
+const dbDir = process.env.DATA_DIR || path.join(__dirname, '../../data');
 const dbPath = path.join(dbDir, 'second-brain.db');
 
 let sqlDb: SqlJsDatabase;
