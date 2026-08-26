@@ -1,4 +1,4 @@
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+import initSqlJs, { type Database as SqlJsDatabase, type SqlJsStatic } from 'sql.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,20 +8,12 @@ const dbDir = path.join(__dirname, '../../data');
 const dbPath = path.join(dbDir, 'second-brain.db');
 
 let sqlDb: SqlJsDatabase;
+let SQL: SqlJsStatic;
 
 function ensureDataDir() {
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
-}
-
-function loadDb(): SqlJsDatabase {
-  ensureDataDir();
-  if (fs.existsSync(dbPath)) {
-    const buffer = fs.readFileSync(dbPath);
-    return new sqlDb.constructor(buffer);
-  }
-  return new sqlDb.constructor();
 }
 
 function saveDb() {
@@ -46,7 +38,7 @@ const db = {
           const values = stmt.get();
           stmt.free();
           const row: any = {};
-          columns.forEach((col, i) => { row[col] = values[i]; });
+          columns.forEach((col: string, i: number) => { row[col] = values[i]; });
           return row;
         }
         stmt.free();
@@ -60,7 +52,7 @@ const db = {
           const columns = stmt.getColumnNames();
           const values = stmt.get();
           const row: any = {};
-          columns.forEach((col, i) => { row[col] = values[i]; });
+          columns.forEach((col: string, i: number) => { row[col] = values[i]; });
           results.push(row);
         }
         stmt.free();
@@ -73,18 +65,19 @@ const db = {
     saveDb();
   },
   pragma(_p: string) {
-    // sql.js handles this differently, ignore for now
+    // sql.js handles this differently
   }
 };
 
 export async function initializeDatabase() {
-  const SQL = await initSqlJs();
-  sqlDb = new SQL.Database();
+  SQL = await initSqlJs();
   ensureDataDir();
 
   if (fs.existsSync(dbPath)) {
     const buffer = fs.readFileSync(dbPath);
     sqlDb = new SQL.Database(buffer);
+  } else {
+    sqlDb = new SQL.Database();
   }
 
   sqlDb.run('PRAGMA foreign_keys = ON');

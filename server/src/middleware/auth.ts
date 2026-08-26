@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
+declare module 'express-session' {
+  interface SessionData {
+    userId: string;
+  }
+}
+
 declare global {
   namespace Express {
     interface Request {
