@@ -44,8 +44,8 @@ export function RemindersPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => reminderApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reminders'] });
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData(['reminders'], (old: any[]) => old?.filter((r) => r.id !== id) ?? []);
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });

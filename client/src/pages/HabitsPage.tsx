@@ -28,7 +28,9 @@ export function HabitsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => habitApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['habits'] }),
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData(['habits'], (old: any[]) => old?.filter((h) => h.id !== id) ?? []);
+    },
   });
 
   const toggleLogMutation = useMutation({

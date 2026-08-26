@@ -52,7 +52,7 @@ export function NotesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => noteApi.delete(id),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.setQueryData(['notes'], (old: any[]) => old?.filter((n) => n.id !== id) ?? []);
       if (selectedNote === id) setSelectedNote(null);
     },
   });

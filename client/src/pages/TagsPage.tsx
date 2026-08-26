@@ -27,7 +27,9 @@ export function TagsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => tagApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tags'] }),
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData(['tags'], (old: any[]) => old?.filter((t) => t.id !== id) ?? []);
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {

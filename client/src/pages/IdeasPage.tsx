@@ -34,7 +34,9 @@ export function IdeasPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => ideaApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ideas'] }),
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData(['ideas'], (old: any[]) => old?.filter((i) => i.id !== id) ?? []);
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -43,8 +43,8 @@ export function GoalsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => goalApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData(['goals'], (old: any[]) => old?.filter((g) => g.id !== id) ?? []);
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
